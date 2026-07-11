@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fursa Board — Opportunities, Sorted For You</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800;900&family=Inter:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+
+  :root{
+    --ink:#12172B;
+    --ink-soft:#1D2440;
+    --board:#0B0E1C;
+    --amber:#F2A93B;
+    --amber-dim:#B9832C;
+    --chalk:#F5F3EE;
+    --teal:#2F6E63;
+    --urgent:#E85C41;
+    --line: rgba(245,243,238,0.12);
+  }
+
+  *{box-sizing:border-box; margin:0; padding:0;}
+
+  body{
+    background: var(--board);
+    color: var(--chalk);
+    font-family:'Inter', sans-serif;
+    min-height:100vh;
+    padding: 24px 16px 80px;
+  }
+
+  .wrap{ max-width: 880px; margin: 0 auto; }
+
+  header{
+    text-align:center;
+    padding: 28px 16px 32px;
+    border-bottom: 2px solid var(--amber-dim);
+    margin-bottom: 28px;
+    position:relative;
+  }
+  .eyebrow{
+    font-family:'Space Mono', monospace;
+    font-size:11px;
+    letter-spacing:3px;
+    color: var(--amber);
+    text-transform:uppercase;
+    margin-bottom:10px;
+  }
+  h1{
+    font-family:'Big Shoulders Display', sans-serif;
+    font-weight:900;
+    font-size: clamp(42px, 9vw, 76px);
+    letter-spacing: 4px;
+    line-height:0.9;
+    color: var(--chalk);
+    text-shadow: 0 0 18px rgba(242,169,59,0.15);
+  }
+  h1 span{ color: var(--amber); }
+  .subtitle{
+    font-size:14px;
+    color: rgba(245,243,238,0.6);
+    margin-top:10px;
+    font-family:'Space Mono', monospace;
+  }
+
+  .card{
+    background: var(--ink);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 20px;
+    margin-bottom: 22px;
+  }
+  .card-title{
+    font-family:'Big Shoulders Display', sans-serif;
+    font-weight:800;
+    font-size:20px;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    color: var(--amber);
+    margin-bottom:14px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+  }
+  label{
+    display:block;
+    font-size:11px;
+    letter-spacing:1.5px;
+    text-transform:uppercase;
+    color: rgba(245,243,238,0.5);
+    margin-bottom:6px;
+    font-family:'Space Mono', monospace;
+  }
+  input[type=text], select{
+    width:100%;
+    background: var(--board);
+    border:1px solid var(--line);
+    color: var(--chalk);
+    padding:10px 12px;
+    border-radius:3px;
+    font-family:'Inter', sans-serif;
+    font-size:14px;
+    margin-bottom:14px;
+  }
+  input[type=text]:focus, select:focus{ outline:1px solid var(--amber); border-color:var(--amber); }
+
+  .chip-row{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px; }
+  .chip{
+    border:1px solid var(--line);
+    background: var(--board);
+    color: rgba(245,243,238,0.75);
+    padding:7px 13px;
+    border-radius:20px;
+    font-size:13px;
+    cursor:pointer;
+    user-select:none;
+    transition: all .15s ease;
+  }
+  .chip.active{
+    background: var(--amber);
+    border-color: var(--amber);
+    color: var(--ink);
+    font-weight:600;
+  }
+
+  button{
+    font-family:'Space Mono', monospace;
+    font-size:13px;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    background: var(--amber);
+    color: var(--ink);
+    border:none;
+    padding:11px 20px;
+    border-radius:3px;
+    cursor:pointer;
+    font-weight:700;
+  }
+  button.ghost{
+    background:transparent;
+    color: var(--amber);
+    border:1px solid var(--amber-dim);
+  }
+  button:hover{ filter:brightness(1.08); }
+  button:disabled{ opacity:0.5; cursor:not-allowed; }
+  button:focus-visible, .chip:focus-visible{ outline:2px solid var(--amber); outline-offset:2px; }
+
+  .board-head{
+    display:flex; justify-content:space-between; align-items:baseline;
+    margin: 30px 0 12px;
+    padding: 0 4px;
+  }
+  .board-head h2{
+    font-family:'Big Shoulders Display', sans-serif;
+    font-weight:900;
+    font-size:26px;
+    letter-spacing:1px;
+    text-transform:uppercase;
+  }
+  .board-head .count{
+    font-family:'Space Mono', monospace;
+    font-size:12px;
+    color: rgba(245,243,238,0.5);
+  }
+
+  .row-labels{
+    display:grid;
+    grid-template-columns: 2.6fr 1.3fr 1fr 1fr 0.9fr;
+    gap:10px;
+    padding: 0 16px 8px;
+    font-family:'Space Mono', monospace;
+    font-size:10px;
+    letter-spacing:1.5px;
+    text-transform:uppercase;
+    color: rgba(245,243,238,0.4);
+    border-bottom:1px solid var(--line);
+  }
+
+  .opp-row{
+    display:grid;
+    grid-template-columns: 2.6fr 1.3fr 1fr 1fr 0.9fr;
+    gap:10px;
+    align-items:center;
+    background: var(--ink);
+    border-bottom: 1px solid var(--line);
+    padding: 16px;
+    transition: background .15s ease;
+  }
+  .opp-row:hover{ background: var(--ink-soft); }
+  .opp-row:first-of-type{ border-top: 1px solid var(--line); }
+
+  .opp-title{ font-weight:600; font-size:15px; margin-bottom:3px; }
+  .opp-org{ font-size:12px; color: rgba(245,243,238,0.55); }
+
+  .tag{
+    display:inline-block;
+    font-family:'Space Mono', monospace;
+    font-size:10px;
+    color: var(--teal);
+    border:1px solid var(--teal);
+    padding:2px 7px;
+    border-radius:20px;
+    margin-top:6px;
+  }
+
+  .deadline{ font-family:'Space Mono', monospace; font-size:13px; }
+  .deadline.urgent{ color: var(--urgent); font-weight:700; }
+
+  .match-badge{
+    font-family:'Space Mono', monospace;
+    font-size:13px;
+    font-weight:700;
+    color: var(--amber);
+    text-align:right;
+  }
+
+  .apply-link{
+    font-family:'Space Mono', monospace;
+    font-size:11px;
+    color: var(--ink);
+    background: var(--amber);
+    padding:6px 10px;
+    border-radius:3px;
+    text-decoration:none;
+    text-align:center;
+    display:inline-block;
+    font-weight:700;
+  }
+
+  .empty{
+    text-align:center;
+    padding:40px 20px;
+    color: rgba(245,243,238,0.5);
+    font-family:'Space Mono', monospace;
+    font-size:13px;
+    border:1px dashed var(--line);
+  }
+
+  .error-box{
+    background: rgba(232,92,65,0.12);
+    border:1px solid var(--urgent);
+    color:#ffb4a2;
+    padding:12px 14px;
+    border-radius:3px;
+    font-family:'Space Mono', monospace;
+    font-size:12px;
+    margin-bottom:16px;
+  }
+
+  .add-form{ display:none; }
+  .add-form.open{ display:block; }
+  .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+
+  .status-msg{
+    font-family:'Space Mono', monospace;
+    font-size:12px;
+    color: var(--teal);
+    margin-top:10px;
+    min-height:16px;
+  }
+
+  footer{
+    text-align:center;
+    font-family:'Space Mono', monospace;
+    font-size:11px;
+    color: rgba(245,243,238,0.35);
+    margin-top:40px;
+    letter-spacing:1px;
+  }
+
+  @media (max-width: 640px){
+    .row-labels{ display:none; }
+    .opp-row{
+      grid-template-columns: 1fr;
+      gap:6px;
+    }
+    .match-badge{ text-align:left; }
+    .grid2{ grid-template-columns:1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="eyebrow">Nairobi &middot; Mombasa &middot; Kisumu &middot; Eldoret &middot; Everywhere</div>
+    <h1>FURSA <span>BOARD</span></h1>
+    <div class="subtitle">// scholarships, internships & gigs — matched to you, not everyone</div>
+  </header>
+
+  <div id="topError"></div>
+
+  <div class="card">
+    <div class="card-title">
+      <span>Your Profile</span>
+      <span id="matchStatus" style="font-size:11px; color:rgba(245,243,238,0.5); font-weight:400; letter-spacing:0.5px;"></span>
+    </div>
+
+    <div class="grid2">
+      <div>
+        <label for="name">Name</label>
+        <input type="text" id="name" placeholder="e.g. Wanjiku">
+      </div>
+      <div>
+        <label for="course">Course</label>
+        <input type="text" id="course" placeholder="e.g. BSc Computer Science">
+      </div>
+    </div>
+
+    <div class="grid2">
+      <div>
+        <label for="year">Year of Study</label>
+        <select id="year">
+          <option value="">Select year</option>
+          <option>1st Year</option>
+          <option>2nd Year</option>
+          <option>3rd Year</option>
+          <option>4th Year</option>
+          <option>Postgrad</option>
+        </select>
+      </div>
+      <div></div>
+    </div>
+
+    <label>Interests (pick what fits — this drives your matches)</label>
+    <div class="chip-row" id="interestChips"></div>
+
+    <button id="saveProfileBtn" onclick="saveProfile()">Save Profile & Match Me</button>
+  </div>
+
+  <div class="board-head">
+    <h2>Departures</h2>
+    <span class="count" id="oppCount">loading…</span>
+  </div>
+
+  <div class="row-labels">
+    <span>Opportunity</span>
+    <span>Category</span>
+    <span>Closes</span>
+    <span>Apply</span>
+    <span>Match</span>
+  </div>
+
+  <div id="board"></div>
+
+  <div class="card" style="margin-top:26px;">
+    <div class="card-title">
+      <span>Know an opportunity? Add it to the board</span>
+      <button class="ghost" onclick="toggleForm()" id="toggleBtn">+ Add</button>
+    </div>
+    <div class="add-form" id="addForm">
+      <div class="grid2">
+        <div>
+          <label>Opportunity title</label>
+          <input type="text" id="f-title" placeholder="e.g. Google Africa Scholarship">
+        </div>
+        <div>
+          <label>Organisation</label>
+          <input type="text" id="f-org" placeholder="e.g. Google">
+        </div>
+      </div>
+      <div class="grid2">
+        <div>
+          <label>Category</label>
+          <select id="f-category">
+            <option>Scholarship</option>
+            <option>Internship</option>
+            <option>Hackathon</option>
+            <option>Fellowship</option>
+            <option>Grant / Funding</option>
+            <option>Job</option>
+          </select>
+        </div>
+        <div>
+          <label>Deadline</label>
+          <input type="text" id="f-deadline" placeholder="e.g. 2026-08-15">
+        </div>
+      </div>
+      <label>Tags (comma separated — helps matching, e.g. "tech, fintech, data")</label>
+      <input type="text" id="f-tags" placeholder="tech, fintech, ai, design, business...">
+      <label>Application link</label>
+      <input type="text" id="f-link" placeholder="https://...">
+      <button onclick="addOpportunity()">Post to Board</button>
+      <div class="status-msg" id="addStatus"></div>
+    </div>
+  </div>
+
+  <footer>FURSA BOARD — live database, real listings, zero budget</footer>
+</div>
+
+<script>
+const SUPABASE_URL = "https://byzygsmfemfipqvetaen.supabase.co";
+const SUPABASE_KEY = "sb_publishable_Et_Lketjz3AVER8Cy3296Q_KiTCHOpV";
+
+// Minimal REST wrapper — avoids the Supabase SDK, which triggers a
+// DataCloneError inside Claude's sandboxed artifact iframe.
+const sb = {
+  from(table){
+    const base = `${SUPABASE_URL}/rest/v1/${table}`;
+    const headers = {
+      "apikey": SUPABASE_KEY,
+      "Authorization": `Bearer ${SUPABASE_KEY}`,
+      "Content-Type": "application/json"
+    };
+    return {
+      async select(cols="*"){
+        try{
+          const res = await fetch(`${base}?select=${encodeURIComponent(cols)}&order=created_at.desc`, { headers });
+          if(!res.ok) return { data:null, error:{ message: await res.text() } };
+          return { data: await res.json(), error:null };
+        }catch(e){ return { data:null, error:{ message: e.message } }; }
+      },
+      async eq(col, val){
+        try{
+          const res = await fetch(`${base}?${col}=eq.${encodeURIComponent(val)}&select=*`, { headers });
+          if(!res.ok) return { data:null, error:{ message: await res.text() } };
+          const rows = await res.json();
+          return { data: rows[0] || null, error:null };
+        }catch(e){ return { data:null, error:{ message: e.message } }; }
+      },
+      async insert(payload){
+        try{
+          const res = await fetch(base, {
+            method:"POST",
+            headers: { ...headers, "Prefer":"return=representation" },
+            body: JSON.stringify(payload)
+          });
+          if(!res.ok) return { data:null, error:{ message: await res.text() } };
+          const rows = await res.json();
+          return { data: rows[0] || null, error:null };
+        }catch(e){ return { data:null, error:{ message: e.message } }; }
+      }
+    };
+  }
+};
+
+const INTERESTS = ["tech","ai","fintech","data","design","business","health","agriculture","education","engineering","research","media","law","environment"];
+let selectedInterests = new Set();
+const PROFILE_ID_KEY = "fursa_profile_id";
+
+function daysLeft(dateStr){
+  const d = new Date(dateStr);
+  const now = new Date();
+  return Math.ceil((d-now)/(1000*60*60*24));
+}
+
+function escapeHtml(s){
+  return String(s ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+function renderChips(){
+  const box = document.getElementById('interestChips');
+  box.innerHTML = INTERESTS.map(i =>
+    `<span class="chip" data-i="${i}" tabindex="0" onclick="toggleChip('${i}')" onkeydown="if(event.key==='Enter')toggleChip('${i}')">${i}</span>`
+  ).join('');
+}
+function toggleChip(i){
+  if(selectedInterests.has(i)) selectedInterests.delete(i); else selectedInterests.add(i);
+  document.querySelectorAll('.chip').forEach(c=>{
+    c.classList.toggle('active', selectedInterests.has(c.dataset.i));
+  });
+}
+
+function matchScore(tags){
+  if(selectedInterests.size===0) return null;
+  const t = (tags||[]).map(x=>x.toLowerCase());
+  let hits = 0;
+  selectedInterests.forEach(i=>{ if(t.includes(i)) hits++; });
+  return Math.round((hits/selectedInterests.size)*100);
+}
+
+function showTopError(msg){
+  document.getElementById('topError').innerHTML = `<div class="error-box">${escapeHtml(msg)}</div>`;
+}
+function clearTopError(){
+  document.getElementById('topError').innerHTML = '';
+}
+
+async function saveProfile(){
+  const btn = document.getElementById('saveProfileBtn');
+  const name = document.getElementById('name').value.trim();
+  const course = document.getElementById('course').value.trim();
+  const year = document.getElementById('year').value;
+  const interests = Array.from(selectedInterests);
+
+  if(interests.length === 0){
+    document.getElementById('matchStatus').textContent = 'Pick at least one interest first';
+    document.getElementById('matchStatus').style.color = 'var(--urgent)';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Saving...';
+
+  const { data, error } = await sb.from('profiles').insert({
+    name, course, year_of_study: year, interests: interests.join(', ')
+  });
+
+  btn.disabled = false;
+  btn.textContent = 'Save Profile & Match Me';
+
+  if(error){
+    showTopError('Could not save profile: ' + error.message);
+    return;
+  }
+  clearTopError();
+  localStorage.setItem(PROFILE_ID_KEY, data.id);
+  document.getElementById('matchStatus').textContent = 'Saved ✓';
+  document.getElementById('matchStatus').style.color = 'var(--teal)';
+  renderBoard();
+}
+
+async function loadProfileIfExists(){
+  const savedId = localStorage.getItem(PROFILE_ID_KEY);
+  if(!savedId) return;
+  const { data, error } = await sb.from('profiles').eq('id', savedId);
+  if(error || !data) return;
+  document.getElementById('name').value = data.name || '';
+  document.getElementById('course').value = data.course || '';
+  document.getElementById('year').value = data.year_of_study || '';
+  (data.interests || '').split(',').map(s=>s.trim()).filter(Boolean).forEach(i => selectedInterests.add(i));
+  document.querySelectorAll('.chip').forEach(c => c.classList.toggle('active', selectedInterests.has(c.dataset.i)));
+  document.getElementById('matchStatus').textContent = 'Welcome back ✓';
+  document.getElementById('matchStatus').style.color = 'var(--teal)';
+}
+
+async function renderBoard(){
+  const board = document.getElementById('board');
+  board.innerHTML = '<div class="empty">Loading the board...</div>';
+
+  const { data: opps, error } = await sb.from('opportunities').select('*');
+
+  if(error){
+    board.innerHTML = '';
+    showTopError('Could not load opportunities: ' + error.message);
+    document.getElementById('oppCount').textContent = '—';
+    return;
+  }
+
+  const withMeta = (opps || [])
+    .map(o => ({
+      ...o,
+      tagList: (o.category ? [o.category.toLowerCase()] : []).concat(
+        (o.description||'').toLowerCase().split(/[,\s]+/).filter(Boolean)
+      ),
+      left: o.deadline ? daysLeft(o.deadline) : 999
+    }))
+    .filter(o => o.left >= 0)
+    .map(o => ({...o, score: matchScore(o.tagList)}))
+    .sort((a,b) => {
+      const sa = a.score === null ? -1 : a.score;
+      const sb2 = b.score === null ? -1 : b.score;
+      return (sb2 - sa) || (a.left - b.left);
+    });
+
+  document.getElementById('oppCount').textContent = withMeta.length + ' listed';
+
+  if(withMeta.length===0){
+    board.innerHTML = '<div class="empty">Nothing open right now — check back soon, or add one below.</div>';
+    return;
+  }
+
+  board.innerHTML = withMeta.map(o => `
+    <div class="opp-row">
+      <div>
+        <div class="opp-title">${escapeHtml(o.title)}</div>
+        <div class="opp-org">${escapeHtml(o.organization)}</div>
+        ${o.category ? `<span class="tag">${escapeHtml(o.category)}</span>` : ''}
+      </div>
+      <div>${escapeHtml(o.category || '—')}</div>
+      <div class="deadline ${o.left<=7?'urgent':''}">${o.deadline ? (o.left===0?'Today':o.left+'d left') : 'open'}</div>
+      <div>${o.source_link ? `<a class="apply-link" href="${escapeHtml(o.source_link)}" target="_blank" rel="noopener">Apply →</a>` : '—'}</div>
+      <div class="match-badge">${o.score===null ? '—' : o.score+'% match'}</div>
+    </div>
+  `).join('');
+}
+
+async function toggleForm(){
+  const f = document.getElementById('addForm');
+  f.classList.toggle('open');
+  document.getElementById('toggleBtn').textContent = f.classList.contains('open') ? '− Close' : '+ Add';
+}
+
+async function addOpportunity(){
+  const title = document.getElementById('f-title').value.trim();
+  const org = document.getElementById('f-org').value.trim();
+  const category = document.getElementById('f-category').value;
+  const deadline = document.getElementById('f-deadline').value.trim();
+  const tags = document.getElementById('f-tags').value.trim();
+  const link = document.getElementById('f-link').value.trim();
+  const status = document.getElementById('addStatus');
+
+  if(!title || !org || !deadline || !tags){
+    status.textContent = 'Please fill in title, org, deadline and at least one tag.';
+    status.style.color = 'var(--urgent)';
+    return;
+  }
+  if(isNaN(new Date(deadline).getTime())){
+    status.textContent = 'Deadline format should be YYYY-MM-DD.';
+    status.style.color = 'var(--urgent)';
+    return;
+  }
+
+  const { error } = await sb.from('opportunities').insert({
+    title, organization: org, category, deadline,
+    description: tags,
+    source_link: link || null
+  });
+
+  if(error){
+    status.textContent = 'Could not save: ' + error.message;
+    status.style.color = 'var(--urgent)';
+    return;
+  }
+
+  status.textContent = 'Posted to the board ✓';
+  status.style.color = 'var(--teal)';
+  ['f-title','f-org','f-deadline','f-tags','f-link'].forEach(id => document.getElementById(id).value = '');
+  renderBoard();
+}
+
+renderChips();
+loadProfileIfExists().then(renderBoard);
+</script>
+</body>
+</html>
