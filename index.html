@@ -5,18 +5,21 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Fursa Board — Opportunities, Sorted For You</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800;900&family=Inter:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+  /* Added Share Tech Mono for the digital board look */
+  @import url('https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800;900&family=Inter:wght@400;500;600;700&family=Space+Mono:wght@400;700&family=Share+Tech+Mono&display=swap');
 
   :root{
-    --ink:#12172B;
-    --ink-soft:#1D2440;
-    --board:#0B0E1C;
-    --amber:#F2A93B;
-    --amber-dim:#B9832C;
-    --chalk:#F5F3EE;
-    --teal:#2F6E63;
-    --urgent:#E85C41;
-    --line: rgba(245,243,238,0.12);
+    /* Updated Matatu Departure Board Theme */
+    --ink: #162242;         /* Navy Card */
+    --ink-soft: #1E2D56;    /* Hover State */
+    --board: #0A1128;       /* Deep Navy Background */
+    --amber: #FFB300;       /* Bright Amber */
+    --amber-dim: #B9832C;
+    --amber-glow: rgba(255, 179, 0, 0.4);
+    --chalk: #E0E4EC;       /* Light Text */
+    --teal: #2F6E63;
+    --urgent: #E85C41;
+    --line: rgba(224, 228, 236, 0.12);
   }
 
   *{box-sizing:border-box; margin:0; padding:0;}
@@ -53,12 +56,12 @@
     letter-spacing: 4px;
     line-height:0.9;
     color: var(--chalk);
-    text-shadow: 0 0 18px rgba(242,169,59,0.15);
+    text-shadow: 0 0 18px rgba(255,179,0,0.25);
   }
   h1 span{ color: var(--amber); }
   .subtitle{
     font-size:14px;
-    color: rgba(245,243,238,0.6);
+    color: rgba(224,228,236,0.6);
     margin-top:10px;
     font-family:'Space Mono', monospace;
   }
@@ -66,9 +69,10 @@
   .card{
     background: var(--ink);
     border: 1px solid var(--line);
-    border-radius: 4px;
+    border-radius: 8px;
     padding: 20px;
     margin-bottom: 22px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
   }
   .card-title{
     font-family:'Big Shoulders Display', sans-serif;
@@ -87,7 +91,7 @@
     font-size:11px;
     letter-spacing:1.5px;
     text-transform:uppercase;
-    color: rgba(245,243,238,0.5);
+    color: rgba(224,228,236,0.6);
     margin-bottom:6px;
     font-family:'Space Mono', monospace;
   }
@@ -97,7 +101,7 @@
     border:1px solid var(--line);
     color: var(--chalk);
     padding:10px 12px;
-    border-radius:3px;
+    border-radius:4px;
     font-family:'Inter', sans-serif;
     font-size:14px;
     margin-bottom:14px;
@@ -108,7 +112,7 @@
   .chip{
     border:1px solid var(--line);
     background: var(--board);
-    color: rgba(245,243,238,0.75);
+    color: rgba(224,228,236,0.75);
     padding:7px 13px;
     border-radius:20px;
     font-size:13px;
@@ -119,7 +123,7 @@
   .chip.active{
     background: var(--amber);
     border-color: var(--amber);
-    color: var(--ink);
+    color: var(--board);
     font-weight:600;
   }
 
@@ -129,20 +133,21 @@
     letter-spacing:1px;
     text-transform:uppercase;
     background: var(--amber);
-    color: var(--ink);
+    color: var(--board);
     border:none;
     padding:11px 20px;
-    border-radius:3px;
+    border-radius:4px;
     cursor:pointer;
     font-weight:700;
+    transition: all 0.2s;
   }
   button.ghost{
     background:transparent;
     color: var(--amber);
     border:1px solid var(--amber-dim);
   }
-  button:hover{ filter:brightness(1.08); }
-  button:disabled{ opacity:0.5; cursor:not-allowed; }
+  button:hover{ filter:brightness(1.1); box-shadow: 0 0 8px var(--amber-glow); }
+  button:disabled{ opacity:0.5; cursor:not-allowed; box-shadow: none; }
   button:focus-visible, .chip:focus-visible{ outline:2px solid var(--amber); outline-offset:2px; }
 
   .board-head{
@@ -160,7 +165,7 @@
   .board-head .count{
     font-family:'Space Mono', monospace;
     font-size:12px;
-    color: rgba(245,243,238,0.5);
+    color: rgba(224,228,236,0.5);
   }
 
   .row-labels{
@@ -172,7 +177,7 @@
     font-size:10px;
     letter-spacing:1.5px;
     text-transform:uppercase;
-    color: rgba(245,243,238,0.4);
+    color: rgba(224,228,236,0.5);
     border-bottom:1px solid var(--line);
   }
 
@@ -187,53 +192,66 @@
     transition: background .15s ease;
   }
   .opp-row:hover{ background: var(--ink-soft); }
-  .opp-row:first-of-type{ border-top: 1px solid var(--line); }
+  .opp-row:first-of-type{ border-top: 1px solid var(--line); border-top-left-radius: 8px; border-top-right-radius: 8px; }
+  .opp-row:last-of-type{ border-bottom-left-radius: 8px; border-bottom-right-radius: 8px; border-bottom: none; }
 
-  .opp-title{ font-weight:600; font-size:15px; margin-bottom:3px; }
-  .opp-org{ font-size:12px; color: rgba(245,243,238,0.55); }
+  .opp-title{ font-weight:600; font-size:15px; margin-bottom:4px; color: var(--chalk); }
+  .opp-org{ font-size:12px; color: rgba(224,228,236,0.65); }
 
+  /* Upgraded Tags to look like colored pills */
   .tag{
     display:inline-block;
     font-family:'Space Mono', monospace;
     font-size:10px;
-    color: var(--teal);
-    border:1px solid var(--teal);
-    padding:2px 7px;
+    color: var(--amber);
+    background: rgba(255, 179, 0, 0.1);
+    border:1px solid var(--amber);
+    padding:4px 9px;
     border-radius:20px;
-    margin-top:6px;
+    margin-top:8px;
+    font-weight: 600;
+    text-transform: uppercase;
   }
 
   .deadline{ font-family:'Space Mono', monospace; font-size:13px; }
   .deadline.urgent{ color: var(--urgent); font-weight:700; }
 
+  /* Digital LED Glow for Match % */
   .match-badge{
-    font-family:'Space Mono', monospace;
-    font-size:13px;
-    font-weight:700;
+    font-family:'Share Tech Mono', monospace;
+    font-size:18px;
+    font-weight:400;
     color: var(--amber);
     text-align:right;
+    text-shadow: 0 0 10px var(--amber-glow);
   }
 
   .apply-link{
     font-family:'Space Mono', monospace;
     font-size:11px;
-    color: var(--ink);
+    color: var(--board);
     background: var(--amber);
-    padding:6px 10px;
-    border-radius:3px;
+    padding:6px 12px;
+    border-radius:4px;
     text-decoration:none;
     text-align:center;
     display:inline-block;
     font-weight:700;
+    transition: all 0.2s;
+  }
+  .apply-link:hover {
+    box-shadow: 0 0 8px var(--amber-glow);
+    filter: brightness(1.1);
   }
 
   .empty{
     text-align:center;
     padding:40px 20px;
-    color: rgba(245,243,238,0.5);
+    color: rgba(224,228,236,0.5);
     font-family:'Space Mono', monospace;
     font-size:13px;
     border:1px dashed var(--line);
+    border-radius: 8px;
   }
 
   .error-box{
@@ -241,7 +259,7 @@
     border:1px solid var(--urgent);
     color:#ffb4a2;
     padding:12px 14px;
-    border-radius:3px;
+    border-radius:4px;
     font-family:'Space Mono', monospace;
     font-size:12px;
     margin-bottom:16px;
@@ -263,18 +281,25 @@
     text-align:center;
     font-family:'Space Mono', monospace;
     font-size:11px;
-    color: rgba(245,243,238,0.35);
+    color: rgba(224,228,236,0.35);
     margin-top:40px;
     letter-spacing:1px;
   }
 
+  /* Mobile-first cards with racing stripes */
   @media (max-width: 640px){
     .row-labels{ display:none; }
     .opp-row{
       grid-template-columns: 1fr;
-      gap:6px;
+      gap:8px;
+      border-left: 4px solid var(--amber);
+      border-radius: 8px;
+      margin-bottom: 16px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+      border-bottom: none;
     }
-    .match-badge{ text-align:left; }
+    .opp-row:first-of-type{ border-top: none; }
+    .match-badge{ text-align:left; font-size: 20px; margin-top: 4px;}
     .grid2{ grid-template-columns:1fr; }
   }
 </style>
@@ -293,7 +318,7 @@
   <div class="card">
     <div class="card-title">
       <span>Your Profile</span>
-      <span id="matchStatus" style="font-size:11px; color:rgba(245,243,238,0.5); font-weight:400; letter-spacing:0.5px;"></span>
+      <span id="matchStatus" style="font-size:11px; color:rgba(224,228,236,0.5); font-weight:400; letter-spacing:0.5px;"></span>
     </div>
 
     <div class="grid2">
