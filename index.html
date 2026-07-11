@@ -493,7 +493,7 @@ async function saveProfile(){
   btn.textContent = 'Saving...';
 
   const { data, error } = await sb.from('profiles').insert({
-    name, course, year_of_study: year, interests: interests.join(', ')
+    name, course, year: year, interests: interests.join(', ')
   });
 
   btn.disabled = false;
@@ -517,7 +517,7 @@ async function loadProfileIfExists(){
   if(error || !data) return;
   document.getElementById('name').value = data.name || '';
   document.getElementById('course').value = data.course || '';
-  document.getElementById('year').value = data.year_of_study || '';
+  document.getElementById('year').value = data.year || '';
   (data.interests || '').split(',').map(s=>s.trim()).filter(Boolean).forEach(i => selectedInterests.add(i));
   document.querySelectorAll('.chip').forEach(c => c.classList.toggle('active', selectedInterests.has(c.dataset.i)));
   document.getElementById('matchStatus').textContent = 'Welcome back ✓';
@@ -540,9 +540,8 @@ async function renderBoard(){
   const withMeta = (opps || [])
     .map(o => ({
       ...o,
-      tagList: (o.category ? [o.category.toLowerCase()] : []).concat(
-        (o.description||'').toLowerCase().split(/[,\s]+/).filter(Boolean)
-      ),
+      tagList: (o.tags || '').toLowerCase().split(/[,\s]+/).filter(Boolean)
+        .concat(o.category ? [o.category.toLowerCase()] : []),
       left: o.deadline ? daysLeft(o.deadline) : 999
     }))
     .filter(o => o.left >= 0)
@@ -564,12 +563,12 @@ async function renderBoard(){
     <div class="opp-row">
       <div>
         <div class="opp-title">${escapeHtml(o.title)}</div>
-        <div class="opp-org">${escapeHtml(o.organization)}</div>
+        <div class="opp-org">${escapeHtml(o.org)}</div>
         ${o.category ? `<span class="tag">${escapeHtml(o.category)}</span>` : ''}
       </div>
       <div>${escapeHtml(o.category || '—')}</div>
       <div class="deadline ${o.left<=7?'urgent':''}">${o.deadline ? (o.left===0?'Today':o.left+'d left') : 'open'}</div>
-      <div>${o.source_link ? `<a class="apply-link" href="${escapeHtml(o.source_link)}" target="_blank" rel="noopener">Apply →</a>` : '—'}</div>
+      <div>${o.link ? `<a class="apply-link" href="${escapeHtml(o.link)}" target="_blank" rel="noopener">Apply →</a>` : '—'}</div>
       <div class="match-badge">${o.score===null ? '—' : o.score+'% match'}</div>
     </div>
   `).join('');
@@ -602,9 +601,9 @@ async function addOpportunity(){
   }
 
   const { error } = await sb.from('opportunities').insert({
-    title, organization: org, category, deadline,
-    description: tags,
-    source_link: link || null
+    title, org, category, deadline,
+    tags,
+    link: link || null
   });
 
   if(error){
