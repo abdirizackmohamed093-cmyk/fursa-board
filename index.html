@@ -391,6 +391,40 @@
 <script>
 const SUPABASE_URL = "https://byzygsmfemfipqvetaen.supabase.co";
 const SUPABASE_KEY = "sb_publishable_Et_Lketjz3AVER8Cy3296Q_KiTCHOpV";
+const GEMINI_API_KEY = "AQ.Ab8RN6KwsnNc-7GTe6lNH0Ja-BJP4rEDQPJ6IrGCCUvKgMsOCw";
+const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
+
+// Asks Gemini to score every opportunity's relevance to the profile in one call.
+// Returns a Map of opportunity id -> score (0-100), or null if the call failed
+// (caller should fall back to simple tag matching in that case).
+async function geminiMatchScores(profile, opps) {
+  if (!profile || opps.length === 0) return null;
+
+  const profileText = `Course: ${profile.course || 'unspecified'}, Year: ${profile.year || 'unspecified'}, Interests: ${(profile.interests || []).join(', ')}`;
+  const oppsText = opps.map(o =>
+    `id: ${o.id} | title: ${o.title} | category: ${o.category || ''} | tags: ${(o.tags||[]).join(', ')}`
+  ).join('\n');
+
+  const prompt = `A student has this profile:\n${profileText}\n\nScore how relevant each of these opportunities is to this student, from 0 (irrelevant) to 100 (perfect match). Consider related fields, not just exact keyword matches (e.g. "software" relates to "tech").\n\nOpportunities:\n${oppsText}\n\nRespond with ONLY a JSON array, no other text, no markdown fences, in this exact form: [{"id":"...","score":85}, ...]`;
+
+  try {
+    const res = await fetch(GEMINI_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    let text = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    text = text.replace(/```json|```/g, '').trim();
+    const parsed = JSON.parse(text);
+    const map = new Map();
+    parsed.forEach(item => map.set(item.id, item.score));
+    return map;
+  } catch (e) {
+    return null;
+  }
+}
 
 // Minimal REST wrapper — avoids the Supabase SDK, which triggers a
 // DataCloneError inside Claude's sandboxed artifact iframe.
@@ -436,6 +470,7 @@ const sb = {
 
 const INTERESTS = ["tech","ai","fintech","data","design","business","health","agriculture","education","engineering","research","media","law","environment"];
 let selectedInterests = new Set();
+let currentProfile = null;
 const PROFILE_ID_KEY = "fursa_profile_id";
 
 function daysLeft(dateStr){
@@ -505,9 +540,10 @@ async function saveProfile(){
   }
   clearTopError();
   localStorage.setItem(PROFILE_ID_KEY, data.id);
+  currentProfile = data;
   document.getElementById('matchStatus').textContent = 'Saved ✓';
   document.getElementById('matchStatus').style.color = 'var(--teal)';
-  renderBoard();
+  renderBoard(currentProfile);
 }
 
 async function loadProfileIfExists(){
@@ -515,6 +551,7 @@ async function loadProfileIfExists(){
   if(!savedId) return;
   const { data, error } = await sb.from('profiles').eq('id', savedId);
   if(error || !data) return;
+  currentProfile = data;
   document.getElementById('name').value = data.name || '';
   document.getElementById('course').value = data.course || '';
   document.getElementById('year').value = data.year || '';
@@ -524,7 +561,7 @@ async function loadProfileIfExists(){
   document.getElementById('matchStatus').style.color = 'var(--teal)';
 }
 
-async function renderBoard(){
+async function renderBoard(profile) {
   const board = document.getElementById('board');
   board.innerHTML = '<div class="empty">Loading the board...</div>';
 
@@ -537,22 +574,34 @@ async function renderBoard(){
     return;
   }
 
-  const withMeta = (opps || [])
+  const openOpps = (opps || []).filter(o => !o.deadline || daysLeft(o.deadline) >= 0);
+
+  let geminiScores = null;
+  let usingSmartMatch = false;
+  if (profile && selectedInterests.size > 0 && openOpps.length > 0) {
+    geminiScores = await geminiMatchScores(profile, openOpps);
+    usingSmartMatch = geminiScores !== null;
+  }
+
+  const withMeta = openOpps
     .map(o => ({
       ...o,
       tagList: (Array.isArray(o.tags) ? o.tags : []).map(t => t.toLowerCase())
         .concat(o.category ? [o.category.toLowerCase()] : []),
       left: o.deadline ? daysLeft(o.deadline) : 999
     }))
-    .filter(o => o.left >= 0)
-    .map(o => ({...o, score: matchScore(o.tagList)}))
+    .map(o => ({
+      ...o,
+      score: usingSmartMatch ? (geminiScores.get(o.id) ?? null) : matchScore(o.tagList)
+    }))
     .sort((a,b) => {
       const sa = a.score === null ? -1 : a.score;
       const sb2 = b.score === null ? -1 : b.score;
       return (sb2 - sa) || (a.left - b.left);
     });
 
-  document.getElementById('oppCount').textContent = withMeta.length + ' listed';
+  const modeLabel = usingSmartMatch ? '🤖 AI-matched' : (selectedInterests.size > 0 ? 'tag-matched' : '');
+  document.getElementById('oppCount').textContent = withMeta.length + ' listed' + (modeLabel ? ' · ' + modeLabel : '');
 
   if(withMeta.length===0){
     board.innerHTML = '<div class="empty">Nothing open right now — check back soon, or add one below.</div>';
@@ -615,11 +664,11 @@ async function addOpportunity(){
   status.textContent = 'Posted to the board ✓';
   status.style.color = 'var(--teal)';
   ['f-title','f-org','f-deadline','f-tags','f-link'].forEach(id => document.getElementById(id).value = '');
-  renderBoard();
+  renderBoard(currentProfile);
 }
 
 renderChips();
-loadProfileIfExists().then(renderBoard);
+loadProfileIfExists().then(() => renderBoard(currentProfile));
 </script>
 </body>
 </html>
