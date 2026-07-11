@@ -493,7 +493,7 @@ async function saveProfile(){
   btn.textContent = 'Saving...';
 
   const { data, error } = await sb.from('profiles').insert({
-    name, course, year: year, interests: interests.join(', ')
+    name, course, year: year, interests: interests
   });
 
   btn.disabled = false;
@@ -518,7 +518,7 @@ async function loadProfileIfExists(){
   document.getElementById('name').value = data.name || '';
   document.getElementById('course').value = data.course || '';
   document.getElementById('year').value = data.year || '';
-  (data.interests || '').split(',').map(s=>s.trim()).filter(Boolean).forEach(i => selectedInterests.add(i));
+  (Array.isArray(data.interests) ? data.interests : []).forEach(i => selectedInterests.add(i));
   document.querySelectorAll('.chip').forEach(c => c.classList.toggle('active', selectedInterests.has(c.dataset.i)));
   document.getElementById('matchStatus').textContent = 'Welcome back ✓';
   document.getElementById('matchStatus').style.color = 'var(--teal)';
@@ -540,7 +540,7 @@ async function renderBoard(){
   const withMeta = (opps || [])
     .map(o => ({
       ...o,
-      tagList: (o.tags || '').toLowerCase().split(/[,\s]+/).filter(Boolean)
+      tagList: (Array.isArray(o.tags) ? o.tags : []).map(t => t.toLowerCase())
         .concat(o.category ? [o.category.toLowerCase()] : []),
       left: o.deadline ? daysLeft(o.deadline) : 999
     }))
@@ -602,7 +602,7 @@ async function addOpportunity(){
 
   const { error } = await sb.from('opportunities').insert({
     title, org, category, deadline,
-    tags,
+    tags: tags.split(',').map(t => t.trim()).filter(Boolean),
     link: link || null
   });
 
